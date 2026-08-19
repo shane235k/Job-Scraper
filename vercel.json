@@ -1,8 +1,16 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://job-injestion-backend.onrender.com/:path*"
+      "source": "/api/(.*)",
+      "destination": "https://job-injestion-backend.onrender.com/api/$1"
+    },
+    {
+      "source": "/api",
+      "destination": "https://job-injestion-backend.onrender.com/api"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
