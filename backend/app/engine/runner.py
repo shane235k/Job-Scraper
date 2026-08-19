@@ -67,6 +67,9 @@ class IngestionRunner:
     @classmethod
     async def run(cls, db: Session, source_id: str) -> IngestionRun:
         adapter = cls.get_adapter(source_id)
+        if hasattr(adapter, "advance_rotation"):
+            adapter.advance_rotation()
+
         source_rec = cls.ensure_source_record(db, adapter)
 
         now = datetime.datetime.utcnow()

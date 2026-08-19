@@ -8,7 +8,7 @@ export default function JobsSection({ jobsData, filters, setFilters, onPageChang
   const pages = jobsData?.pages || 1;
 
   return (
-    <div className="section-block">
+    <div className="section-block" data-tour="jobs-section">
       <div className="section-header">
         <h2 className="section-title">Latest Scraped Jobs ({total})</h2>
       </div>
@@ -35,7 +35,7 @@ export default function JobsSection({ jobsData, filters, setFilters, onPageChang
         >
           <option value="">All Sources</option>
           <option value="python_org">Python.org Jobs (HTML Scraper)</option>
-          <option value="linkedin">LinkedIn Jobs (Public Scraper)</option>
+          <option value="linkedin">LinkedIn Jobs (Direct HTML Scraper)</option>
           <option value="muse">The Muse (API)</option>
         </select>
       </div>

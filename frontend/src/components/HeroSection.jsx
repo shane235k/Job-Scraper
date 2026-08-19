@@ -12,7 +12,7 @@ export default function HeroSection({ onRunIngestion, isRunning, selectedSource,
           Real-time job listing acquisition, BeautifulSoup HTML scraping, deduplication, and resilience monitoring.
         </p>
 
-        <div className="hero-actions">
+        <div className="hero-actions" data-tour="hero-actions">
           <button
             className="btn btn-primary"
             onClick={() => onRunIngestion(selectedSource)}

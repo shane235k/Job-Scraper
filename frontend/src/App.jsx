@@ -6,6 +6,7 @@ import SourcesSection from './components/SourcesSection';
 import JobsSection from './components/JobsSection';
 import RunsHistory from './components/RunsHistory';
 import ErrorsSection from './components/ErrorsSection';
+import ProductTour from './components/ProductTour';
 
 import {
   fetchMetrics,
@@ -27,6 +28,7 @@ export default function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [cooldowns, setCooldowns] = useState({});
+  const [isTourOpen, setIsTourOpen] = useState(false);
 
   const [jobFilters, setJobFilters] = useState({
     title: '',
@@ -43,7 +45,6 @@ export default function App() {
     (srcItems || []).forEach((src) => {
       if (src.last_attempted_ingestion) {
         let lastTime = new Date(src.last_attempted_ingestion).getTime();
-        // Check if string lacked timezone indicator Z
         if (typeof src.last_attempted_ingestion === 'string' && !src.last_attempted_ingestion.endsWith('Z') && !src.last_attempted_ingestion.includes('+')) {
           lastTime = new Date(src.last_attempted_ingestion + 'Z').getTime();
         }
@@ -104,6 +105,12 @@ export default function App() {
   useEffect(() => {
     loadData();
     loadJobs();
+    
+    // Auto-launch product tour on first visit
+    if (!localStorage.getItem('job_ingestion_tour_seen')) {
+      setIsTourOpen(true);
+    }
+
     const pollInterval = setInterval(() => {
       loadData();
       loadJobs();
@@ -123,7 +130,6 @@ export default function App() {
       await loadData();
       await loadJobs();
     } catch (err) {
-      // Parse HTTP 429 remaining seconds if detail contains number
       const match = err.message.match(/wait (\d+) seconds/i);
       if (match) {
         const rem = parseInt(match[1], 10);
@@ -138,9 +144,22 @@ export default function App() {
     }
   };
 
+  const handleCloseTour = () => {
+    localStorage.setItem('job_ingestion_tour_seen', 'true');
+    setIsTourOpen(false);
+  };
+
+  const handleStartTour = () => {
+    setIsTourOpen(true);
+  };
+
   return (
     <div className="app">
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Header
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onStartTour={handleStartTour}
+      />
 
       <main className="main-content">
         <HeroSection
@@ -204,6 +223,12 @@ export default function App() {
           )}
         </div>
       </main>
+
+      <ProductTour
+        isOpen={isTourOpen}
+        onClose={handleCloseTour}
+        onNavigateTab={setActiveTab}
+      />
     </div>
   );
 }

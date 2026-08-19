@@ -12,7 +12,7 @@ export default function SourcesSection({ sources, onRunIngestion, isRunning, coo
   }
 
   return (
-    <div className="section-block">
+    <div className="section-block" data-tour="sources-section">
       <div className="section-header">
         <h2 className="section-title">Source Status</h2>
       </div>

@@ -395,3 +395,109 @@ a:hover {
   font-size: 13px;
   color: var(--text-secondary);
 }
+
+/* Product Tour Overlay & Spotlight */
+.tour-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+.tour-spotlight {
+  position: absolute;
+  border-radius: 6px;
+  box-shadow: 0 0 0 4px #FFFFFF, 0 0 0 9999px rgba(0, 0, 0, 0.75);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 10000;
+}
+
+.tour-card {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 420px;
+  max-width: calc(100vw - 48px);
+  background: #111111;
+  color: #FFFFFF;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+  animation: tourCardFadeIn 0.25s ease-out forwards;
+}
+
+.tour-card-center {
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
+
+.tour-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tour-step-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #888888;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tour-close-btn {
+  background: none;
+  border: none;
+  color: #888888;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.tour-close-btn:hover {
+  color: #FFFFFF;
+}
+
+.tour-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+
+.tour-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #CCCCCC;
+  margin-bottom: 20px;
+}
+
+.tour-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #222222;
+  padding-top: 14px;
+}
+
+@keyframes tourCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
