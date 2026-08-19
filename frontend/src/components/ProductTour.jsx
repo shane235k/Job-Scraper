@@ -55,21 +55,14 @@ export default function ProductTour({ isOpen, onClose, onNavigateTab }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState(null);
 
-  // Reset to Step 1 whenever tour opens
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentStep(0);
-    }
-  }, [isOpen]);
-
   const step = TOUR_STEPS[currentStep] || TOUR_STEPS[0];
 
-  const updateTargetRect = useCallback(() => {
-    if (!step || !step.target) {
+  const measureTarget = useCallback((targetSel) => {
+    if (!targetSel) {
       setTargetRect(null);
       return;
     }
-    const el = document.querySelector(step.target);
+    const el = document.querySelector(targetSel);
     if (el) {
       const rect = el.getBoundingClientRect();
       setTargetRect({
@@ -81,37 +74,65 @@ export default function ProductTour({ isOpen, onClose, onNavigateTab }) {
     } else {
       setTargetRect(null);
     }
-  }, [step]);
+  }, []);
+
+  // Synchronously switch step and update target rect immediately to prevent laggy jumps
+  const goToStep = useCallback((nextIndex) => {
+    const nextStep = TOUR_STEPS[nextIndex];
+    if (!nextStep) return;
+
+    if (nextStep.id === 'step-runs' && onNavigateTab) {
+      onNavigateTab('runs');
+    } else if ((nextStep.id === 'step-sources' || nextStep.id === 'step-jobs' || nextStep.id === 'step-metrics') && onNavigateTab) {
+      onNavigateTab('overview');
+    }
+
+    if (nextStep.target) {
+      const el = document.querySelector(nextStep.target);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        setTargetRect({
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height
+        });
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        setTargetRect(null);
+      }
+    } else {
+      setTargetRect(null);
+    }
+
+    setCurrentStep(nextIndex);
+  }, [onNavigateTab]);
+
+  // Reset to Step 1 whenever tour opens
+  useEffect(() => {
+    if (isOpen) {
+      goToStep(0);
+    }
+  }, [isOpen, goToStep]);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    // Handle tab switching if step targets specific views
-    if (step.id === 'step-runs' && onNavigateTab) {
-      onNavigateTab('runs');
-    } else if ((step.id === 'step-sources' || step.id === 'step-jobs' || step.id === 'step-metrics') && onNavigateTab) {
-      onNavigateTab('overview');
-    }
+    // Refresh rect after smooth scroll finishes
+    const timer = setTimeout(() => {
+      measureTarget(step.target);
+    }, 250);
 
-    if (step.target) {
-      const el = document.querySelector(step.target);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-
-    // Delay rect measurement until smooth scroll finishes
-    const timer = setTimeout(updateTargetRect, 300);
-
-    window.addEventListener('resize', updateTargetRect);
-    window.addEventListener('scroll', updateTargetRect, true);
+    const handleScrollOrResize = () => measureTarget(step.target);
+    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener('scroll', handleScrollOrResize, true);
 
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('resize', updateTargetRect);
-      window.removeEventListener('scroll', updateTargetRect, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
     };
-  }, [currentStep, isOpen, step, onNavigateTab, updateTargetRect]);
+  }, [currentStep, isOpen, step, measureTarget]);
 
   if (!isOpen) return null;
 
@@ -122,39 +143,56 @@ export default function ProductTour({ isOpen, onClose, onNavigateTab }) {
     if (isLast) {
       onClose();
     } else {
-      setCurrentStep((prev) => prev + 1);
+      goToStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
     if (!isFirst) {
-      setCurrentStep((prev) => prev - 1);
+      goToStep(currentStep - 1);
     }
   };
 
-  // Dynamically position tour card strictly within visible viewport bounds
+  // Dynamically position tour card OUTSIDE the highlighted area
   let cardPositionStyle = {};
   if (targetRect) {
     const cardHeight = 240;
-    
-    let topPos = targetRect.top + 20;
-    if (topPos + cardHeight > window.innerHeight - 20) {
-      topPos = Math.max(20, window.innerHeight - cardHeight - 20);
+    const cardWidth = 440;
+
+    // For huge sections (like Step 6 jobs section), pin to bottom-right corner
+    if (step.id === 'step-jobs' || targetRect.height > 350) {
+      cardPositionStyle = {
+        position: 'fixed',
+        bottom: '32px',
+        right: '32px',
+        top: 'auto',
+        left: 'auto'
+      };
+    } else {
+      // For standard elements (Steps 2, 3, 4, 5, 7): place card 16px BELOW the element
+      let topPos = targetRect.top + targetRect.height + 16;
+
+      // If room below is insufficient, place card 16px ABOVE the element
+      if (topPos + cardHeight > window.innerHeight - 20) {
+        topPos = targetRect.top - cardHeight - 16;
+      }
+
+      // Clamp inside viewport
+      topPos = Math.max(16, Math.min(window.innerHeight - cardHeight - 16, topPos));
+
+      let leftPos = Math.min(
+        Math.max(16, targetRect.left),
+        window.innerWidth - cardWidth - 24
+      );
+
+      cardPositionStyle = {
+        position: 'fixed',
+        top: `${topPos}px`,
+        left: `${leftPos}px`,
+        bottom: 'auto',
+        right: 'auto'
+      };
     }
-    topPos = Math.max(20, topPos);
-
-    let leftPos = Math.min(
-      Math.max(20, targetRect.left),
-      window.innerWidth - 440
-    );
-
-    cardPositionStyle = {
-      position: 'fixed',
-      top: `${topPos}px`,
-      left: `${leftPos}px`,
-      bottom: 'auto',
-      right: 'auto'
-    };
   }
 
   return (

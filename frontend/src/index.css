@@ -429,6 +429,7 @@ a:hover {
   padding: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   z-index: 10001;
+  transition: top 0.25s cubic-bezier(0.16, 1, 0.3, 1), left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   animation: tourCardFadeIn 0.25s ease-out forwards;
 }
 
